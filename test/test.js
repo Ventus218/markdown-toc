@@ -2,6 +2,7 @@
 
 require('mocha');
 var fs = require('fs');
+var path = require('path');
 var assert = require('assert');
 var inspect = require('util').inspect;
 var utils = require('../lib/utils');
@@ -342,6 +343,30 @@ describe('toc', function() {
       '- [ccc](#baz-ccc)',
       '- [ddd](#fez-ddd)'
     ].join('\n'));
+  });
+
+  describe('Snapshot testing', function() {
+    const sourceDir = 'test/snapshots/input';
+    const expectedDir = 'test/snapshots/output';
+    
+    // Get all .md files from the source directory
+    const files = fs.readdirSync(sourceDir).filter(file => file.endsWith('.md'));
+  
+    files.forEach(file => {
+      it(`should correctly process and match ${file}`, function() {
+        const sourceFile = path.join(sourceDir, file);
+        const expectedFile = path.join(expectedDir, file);
+  
+        // Read the contents of the source and expected files
+        const sourceContent = read(sourceFile);
+        const expectedContent = read(expectedFile);
+  
+        const result = toc(sourceContent).content;
+  
+        // Compare the stripped result with the expected output
+        assert.equal(strip(result), strip(expectedContent), `File ${file} does not match the expected output`);
+      });
+    });
   });
 });
 
